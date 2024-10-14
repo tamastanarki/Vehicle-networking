@@ -81,13 +81,14 @@ int main (void)
   {
     CAN_FRAME* frame_1 = (CAN_FRAME*)malloc(sizeof(CAN_FRAME));
     frame_1->ID = 0;
-    frame_1->DLC = 3;
-    frame_1->Data = 7;
+    frame_1->DLC = 7;
+    frame_1->Data = 3;
     frame_1->CRC = 0;
-    uint64_t framesendend = read_global_timer()+PERIOD0;
+    uint64_t framesendend_1 = read_global_timer()+PERIOD0;
     xil_printf("CAN client %d %d Sending frame id: 0x%x, DLC: 0x%x, Data: 0x%08x%08x, CRC: 0x%x\n", TILE_ID, PARTITION_ID, frame_1->ID, frame_1->DLC, (uint32_t)(frame_1->Data >> 32), (uint32_t)frame_1->Data, frame_1->CRC);
-    xil_printf("timer %d \n",framesendend);
-	can_mac_tx_frame(frame_1);
+    xil_printf("timer %d \n",framesendend_1);
+	  can_mac_tx_frame(frame_1);
+    free(frame_1);
 	//wait(framesendend);
 
 
@@ -97,28 +98,28 @@ int main (void)
     frame_2->DLC = 3;
     frame_2->Data = 3;
     frame_2->CRC = 0;
-    uint64_t framesendend = read_global_timer()+PERIOD0;
+    uint64_t framesendend_2 = read_global_timer()+PERIOD0;
     xil_printf("CAN client %d %d Sending frame id: 0x%x, DLC: 0x%x, Data: 0x%08x%08x, CRC: 0x%x\n", TILE_ID, PARTITION_ID, frame_2->ID, frame_2->DLC, (uint32_t)(frame_2->Data >> 32), (uint32_t)frame_2->Data, frame_2->CRC);
-    xil_printf("timer %d \n",framesendend);
-	can_mac_tx_frame(frame_2);
+    xil_printf("timer %d \n",framesendend_2);
+	  can_mac_tx_frame(frame_2);
+    free(frame_2);
 	//wait(framesendend);
 
 
 
     CAN_FRAME* frame_3 = (CAN_FRAME*)malloc(sizeof(CAN_FRAME));
     frame_3->ID = 0;
-    frame_3->DLC = 3;
-    frame_3->Data = 5;
+    frame_3->DLC = 5;
+    frame_3->Data = 3;
     frame_3->CRC = 0;
-    uint64_t framesendend = read_global_timer()+PERIOD0;
+    uint64_t framesendend_3 = read_global_timer()+PERIOD0;
     xil_printf("CAN client %d %d Sending frame id: 0x%x, DLC: 0x%x, Data: 0x%08x%08x, CRC: 0x%x\n", TILE_ID, PARTITION_ID, frame_3->ID, frame_3->DLC, (uint32_t)(frame_3->Data >> 32), (uint32_t)frame_3->Data, frame_3->CRC);
-    xil_printf("timer %d \n",framesendend);
-	can_mac_tx_frame(frame_3);
+    xil_printf("timer %d \n",framesendend_3);
+	  can_mac_tx_frame(frame_3);
+    free(frame_3);
 	//wait(framesendend);
   }
-  free(frame_1);
-  free(frame_2);
-  free(frame_3);
+
 
 
 
