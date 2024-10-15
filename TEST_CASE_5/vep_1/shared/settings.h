@@ -30,5 +30,10 @@
 /* test case 0
  * define your parameters if needed
  */
-#ifdef TEST_CASE_0
+#ifdef TEST_CASE_4
+  #define ACK_CHECK
+#endif
+
+#ifdef TEST_CASE_5
+	#define CRC_BASE 0xc599
 #endif
