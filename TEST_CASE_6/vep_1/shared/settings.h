@@ -17,7 +17,7 @@
 #define FRAME_LENGTH_CYCLES ((uint64_t)(SYMBOL_LENGTH_CYCLES*135))
 
 /* define the test case you want to run */
-#define TEST_CASE_3
+#define TEST_CASE_5
 
 #define PERIOD0 (FRAME_LENGTH_CYCLES*3)
 #define PERIOD1 (FRAME_LENGTH_CYCLES*4)
@@ -30,5 +30,10 @@
 /* test case 0
  * define your parameters if needed
  */
-#ifdef TEST_CASE_0
+#ifdef TEST_CASE_4
+  //#define ACK_CHECK
+#endif
+
+#ifdef TEST_CASE_5
+	#define CRC_BASE 0xBB3D
 #endif

@@ -10,9 +10,8 @@
 
 int main (void)
 {
-#if (defined(TEST_CASE_6))
+#if defined(TEST_CASE_6)
   case_6_sender(PRIO_PERIOD2, 0x1, 0, 0);
-
 #else
   /******* CAN Client is disabled in this test case *******/
   uint64_t t = read_global_timer();
