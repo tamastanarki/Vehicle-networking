@@ -83,11 +83,11 @@
     {
       calc_curr_crc_bit(data_sym,current_state);
     }
-    if(state->arbitration_check)
+    if(current_state->arbitration_check)
     {
       if(data_sym != right_sym)
       {
-        state->arbitration_error = true;
+        current_state->arbitration_error = true;
       }
     }
     return right_sym;
@@ -118,7 +118,7 @@
     {
       CAN_SYMBOL sym_data = (struct_data >> i) & 1;
       send(sym_data, current_state);
-      if(state->arbitration_check && state->arbitration_error)
+      if(current_state->arbitration_check && current_state->arbitration_error)
       {
         return;
       }
@@ -150,7 +150,7 @@
     {
       CAN_SYMBOL sym_data = (struct_data >> i) & 1;
       send(sym_data, current_state);
-      if(state->arbitration_check && state->arbitration_error)
+      if(current_state->arbitration_check && current_state->arbitration_error)
       {
         return;
       }

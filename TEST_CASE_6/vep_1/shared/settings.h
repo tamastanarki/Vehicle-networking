@@ -17,7 +17,7 @@
 #define FRAME_LENGTH_CYCLES ((uint64_t)(SYMBOL_LENGTH_CYCLES*135))
 
 /* define the test case you want to run */
-#define TEST_CASE_5
+#define TEST_CASE_6
 
 #define PERIOD0 (FRAME_LENGTH_CYCLES*3)
 #define PERIOD1 (FRAME_LENGTH_CYCLES*4)
