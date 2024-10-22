@@ -61,7 +61,7 @@ bool crc_zero_test = false;
       current_state->crc_tracker = current_state->crc_tracker^CRC_BASE;
       
     }
-    //xil_printf("CRC CALC CHECKER : %x \n NEW CRC TRACKER :%x \n", current_state->crc_calc_check, current_state->crc_tracker); 
+    //xil_printf("NEW CRC TRACKER :%x \n", current_state->crc_tracker); 
   }
 #endif
 #if defined(TEST_CASE_1) || defined(TEST_CASE_2) || defined(TEST_CASE_3)

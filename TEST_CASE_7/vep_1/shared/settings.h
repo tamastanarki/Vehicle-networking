@@ -10,7 +10,7 @@
 #define DEBUG_CAN_PHY_RX 2
 #define DEBUG_CAN_PHY_TX 4
 #define DEBUG_CAN_PHY_CLK 8
-#define DEBUG_CAN_PHY   (DEBUG_CAN_PHY_LED) /*| (DEBUG_CAN_PHY_RX) */
+#define DEBUG_CAN_PHY   (DEBUG_CAN_PHY_LED) /*| (DEBUG_CAN_PHY_RX)*/  
 
 /* exported from can-phy-driver.c - do not modify */
 #define SYMBOL_LENGTH_CYCLES ((uint64_t)20423000)

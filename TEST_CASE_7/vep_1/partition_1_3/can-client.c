@@ -81,8 +81,8 @@ int main (void)
   CAN_FRAME* frame = (CAN_FRAME*)malloc(sizeof(CAN_FRAME));
   frame->ID = PRIO_PERIOD0;
   frame->DLC = 0x1;
-  frame->Data = 0;
-  frame->CRC = 0;
+  frame->Data = 7;
+  frame->CRC = 13;
   while(true)
   {
     uint64_t startTime = read_global_timer();
