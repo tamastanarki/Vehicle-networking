@@ -78,7 +78,7 @@ void can_current_state_initial(CAN_CHECK* current_state)
 
 
 #if(defined(TEST_CASE_7))
-CAN_SYMBOL send(CAN_SYMBOL data_sym, CAN_CHECK* current_state)
+CAN_SYMBOL send(CAN_SYMBOL data_sym, CAN_CHECK* current_state);
 
 void calc_bitstuff(CAN_SYMBOL data_sym, CAN_CHECK* current_state)
 {
@@ -197,7 +197,7 @@ void calc_bitstuff(CAN_SYMBOL data_sym, CAN_CHECK* current_state)
 
     if(current_state->bitstuff_check)
     {
-      calc_bitstuff(data_symsym, current_state);
+      calc_bitstuff(data_sym, current_state);
     }
     
     return right_sym;
@@ -358,7 +358,7 @@ void receive(CAN_SYMBOL* data_sym, CAN_CHECK* current_state)
       current_state->arbitration_check = false;
       receive(data_sym, current_state);
       current_state->crc_calc_check = crc;
-      current_state->arbitration_check = arbitration;
+      current_state->arbitration_check = arb;
     }
   }
 
@@ -522,7 +522,7 @@ void wait_for_dominant()
     current_state->crc_calc_check = true;
     current_state->arbitration_check = true;
     #if(defined(TEST_CASE_7))
-    current_state->should_stuff_bits = true;
+    current_state->bitstuff_check = true;
     #endif
     send(DOMINANT, current_state);                                      //SOF
     send_decon_uint32(txFrame->ID, 11, current_state);                  //Identifier
@@ -557,7 +557,7 @@ void wait_for_dominant()
       send_decon_uint32(current_state->crc_tracker,15, current_state);
     }
     #if(defined(TEST_CASE_7))
-    current_state->should_stuff_bits = false;
+    current_state->bitstuff_check = false;
     #endif
     send(RECESSIVE, current_state);                                     //CRC delimiter
     if(send(RECESSIVE, current_state) != DOMINANT)                      //Acknowledge
@@ -622,7 +622,7 @@ void wait_for_dominant()
       CAN_CHECK* current_state = (CAN_CHECK*)malloc(sizeof(CAN_CHECK));
       current_state->crc_calc_check = true;
       #if(defined(TEST_CASE_7))
-      current_state->should_stuff_bits = true;
+      current_state->bitstuff_check = true;
       calc_send_bitstuff(DOMINANT,current_state);
       #endif
       receive_decon_uint32(&(rxFrame->ID), 11, current_state);                  //Identifier
@@ -634,7 +634,7 @@ void wait_for_dominant()
       receive_decon_uint32(&(rxFrame->CRC),15, current_state);                  //CRC
       //current_state->crc_calc_check = false;
       #if(defined(TEST_CASE_7))
-      current_state->should_stuff_bits = false;
+      current_state->bitstuff_check = false;
       #endif
       receive(&sym_data, current_state);                                        //CRC delimiter
       if(current_state->crc_calc_check == false)
@@ -664,7 +664,7 @@ void wait(uint64_t time)
 
   }
 }
-#if defined(TEST_CASE_6)
+/*#if defined(TEST_CASE_6)
   void case_6_sender(uint32_t ID, uint32_t DLC, uint32_t Data, uint32_t CRC)
   {
     uint64_t t = read_global_timer();
@@ -713,4 +713,4 @@ void wait(uint64_t time)
       free(frame);
     }
   }
-#endif
+#endif*/

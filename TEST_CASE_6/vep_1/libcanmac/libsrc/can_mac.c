@@ -31,10 +31,12 @@ void calc_curr_crc_bit(CAN_SYMBOL data_sym, CAN_CHECK* current_state){
 		
 		}
   //current_state->crc_tracker = current_state->crc_tracker & 0xFFFF;
- // xil_printf("CRC CALC CHECKER : %x \n NEW CRC TRACKER :%x \n", current_state->crc_calc_check, current_state->crc_tracker);  
+  //xil_printf("CRC CALC CHECKER : %x \n NEW CRC TRACKER :%x \n", current_state->crc_calc_check, current_state->crc_tracker);  
 }
 
 #elif defined(TEST_CASE_6)
+bool crc_zero_test = false;
+
   struct CAN_CHECK_
   {
     uint32_t crc_tracker;
@@ -57,7 +59,9 @@ void calc_curr_crc_bit(CAN_SYMBOL data_sym, CAN_CHECK* current_state){
     if(current_state->crc_tracker & 0x4599)
     {
       current_state->crc_tracker = current_state->crc_tracker^CRC_BASE;
+      
     }
+    //xil_printf("CRC CALC CHECKER : %x \n NEW CRC TRACKER :%x \n", current_state->crc_calc_check, current_state->crc_tracker); 
   }
 #endif
 #if defined(TEST_CASE_1) || defined(TEST_CASE_2) || defined(TEST_CASE_3)
@@ -362,10 +366,10 @@ void wait_for_dominant()
     else
     {
       for(int i = 0 ; i < 15 ; ++i){
-        calc_curr_crc_bit(DOMINANT, current_state);
+        //calc_curr_crc_bit(DOMINANT, current_state);
       }
       //xil_printf("CRC before decon %x \n :", current_state->crc_tracker) ;
-      //current_state->crc_calc_check = false;
+      current_state->crc_calc_check = false;
       send_decon_uint32(current_state->crc_tracker,15, current_state);
       //xil_printf("CRC After decon: %x \n", current_state->crc_tracker) ;
     }
