@@ -56,11 +56,12 @@ int main (void)
 
   while(true)
   {
-    uint64_t framesendend = read_global_timer()+PERIOD0;
+     uint64_t start = read_global_timer();
+    uint64_t framesendend = start + PERIOD0;
     xil_printf("CAN client %d %d Sending frame id: 0x%x, DLC: 0x%x, Data: 0x%08x%08x, CRC: 0x%x\n", TILE_ID, PARTITION_ID, frame->ID, frame->DLC, (uint32_t)(frame->Data >> 32), (uint32_t)frame->Data, frame->CRC);
     xil_printf("timer %d \n",framesendend);
 	can_mac_tx_frame(frame);
-	//wait(framesendend);
+	wait(framesendend);
   }
   free(frame);
 
@@ -158,15 +159,13 @@ int main (void)
   CAN_FRAME* frame = (CAN_FRAME*)malloc(sizeof(CAN_FRAME));
   frame->ID = 2;
   frame->DLC = 3;
-  frame->Data = 7;
+  frame->Data = 777;
   frame->CRC = 5;
 
   while(true)
   {
     uint64_t framesendend = read_global_timer()+PERIOD0;
-    wait(framesendend);
     xil_printf("CAN client %d %d Sending frame id: 0x%x, DLC: 0x%x, Data: 0x%08x%08x, CRC: 0x%x\n", TILE_ID, PARTITION_ID, frame->ID, frame->DLC, (uint32_t)(frame->Data >> 32), (uint32_t)frame->Data, frame->CRC);
-    xil_printf("timer %d \n",framesendend);
 	while(!can_mac_tx_frame(frame))
   {
     if(read_global_timer() > framesendend - (FRAME_LENGTH_CYCLES + SYMBOL_LENGTH_CYCLES+FRAME_LENGTH_CYCLES * (25 + 8*frame->DLC + 44 + ((34 + 8*frame->DLC -1)/4))))
@@ -175,9 +174,9 @@ int main (void)
       break;
     }
     xil_printf("Acknoeladge failed , Resending!\n");
-	//frame->CRC = 0x3333;
+	  frame->CRC = 5;
   }
-
+  wait(framesendend);
   }
   free(frame);
 
