@@ -8,17 +8,32 @@
 #include "settings.h"
 
 #if defined(TEST_CASE_5)
-  struct CAN_CHECK_
-  {
-    uint32_t crc_tracker;
-    bool crc_calc_check;
-  };
-  typedef struct CAN_CHECK_ CAN_CHECK;	
-  void can_state_initial(CAN_CHECK* current_state)
-  {
-    current_state->crc_calc_check = false;
-    current_state->crc_tracker = 0;
-  }
+bool crc_zero_test = true;
+struct CAN_CHECK_{
+
+	uint32_t crc_tracker;
+	bool crc_calc_check;
+};
+typedef struct CAN_CHECK_ CAN_CHECK;	
+	
+void can_state_initial(CAN_CHECK* current_state) {
+	current_state->crc_calc_check = false;
+	current_state->crc_tracker = 0;
+}	
+
+
+void calc_curr_crc_bit(CAN_SYMBOL data_sym, CAN_CHECK* current_state){
+  
+	current_state->crc_tracker = (current_state->crc_tracker << 1 ) | data_sym;
+	if(current_state->crc_tracker & 0x4599){
+		
+		current_state->crc_tracker = current_state->crc_tracker^CRC_BASE;
+		
+		}
+  //current_state->crc_tracker = current_state->crc_tracker & 0xFFFF;
+ // xil_printf("CRC CALC CHECKER : %x \n NEW CRC TRACKER :%x \n", current_state->crc_calc_check, current_state->crc_tracker);  
+}
+
 #elif defined(TEST_CASE_6)
   struct CAN_CHECK_
   {
@@ -35,12 +50,11 @@
     current_state->arbitration_check = false;
     current_state->arbitration_error = false;
   }
-#endif
-#if defined(TEST_CASE_5) || defined(TEST_CASE_6)
+
   void calc_curr_crc_bit(CAN_SYMBOL data_sym, CAN_CHECK* current_state)
   {
     current_state->crc_tracker = (current_state->crc_tracker << 1 ) | data_sym;
-    if(current_state->crc_tracker & 0x8005)
+    if(current_state->crc_tracker & 0x4599)
     {
       current_state->crc_tracker = current_state->crc_tracker^CRC_BASE;
     }
@@ -278,25 +292,33 @@ void wait_for_dominant()
     send(DOMINANT, current_state);                                      //r0
     send_decon_uint32(txFrame->DLC, 4, current_state);                  //DLC
     send_decon_uint64(txFrame->Data, txFrame->DLC * 8, current_state);  //Data depending on DLC
-    if(((txFrame->CRC >> 31) & 1 ) == 1)
-    {
-      send_decon_uint32(txFrame->CRC,15, current_state);                //CRC
+    if (crc_zero_test == true){
+      current_state->crc_calc_check = false;
+      send_decon_uint32(0, 15, current_state);
     }
+    else if(((txFrame->CRC >> 31) & 1 ) == 1){
+      current_state->crc_calc_check = false;
+      send_decon_uint32(txFrame->CRC,15, current_state); //crc 
+    } 
     else
     {
-      for(int i = 0 ; i < 15 ; ++i)
-      {
-        calc_curr_crc_bit(DOMINANT, current_state);
+      for(int i = 0 ; i < 15 ; ++i){
+        //calc_curr_crc_bit(DOMINANT, current_state);
       }
+      //xil_printf("CRC before decon %x \n :", current_state->crc_tracker) ;
+      current_state->crc_calc_check = false;
       send_decon_uint32(current_state->crc_tracker,15, current_state);
+      //xil_printf("CRC After decon: %x \n", current_state->crc_tracker) ;
     }
-    send(RECESSIVE, current_state);                                     //CRC delimiter
-    if(send(RECESSIVE, current_state) != DOMINANT)                      //Acknowledge
+    send(RECESSIVE, current_state);                          //CRC delimiter
+    
+    if(send(RECESSIVE, current_state) != DOMINANT)           //Acknowledge
     {
       success = false;
     }
-    send(RECESSIVE, current_state);                                     //Acknowledge delimiter
-    send_decon_uint32(0xFFFF, 10, current_state);                       //EOF & interframe space filler
+    send(RECESSIVE, current_state);                          //Acknowledge delimiter
+    send_decon_uint32(0xFFFF, 10, current_state);                      //EOF & interframe space filler
+    crc_zero_test = false;
     free(current_state);
     return success;
   }
@@ -329,17 +351,23 @@ void wait_for_dominant()
     send(DOMINANT, current_state);                                      //r0
     send_decon_uint32(txFrame->DLC, 4, current_state);                  //DLC
     send_decon_uint64(txFrame->Data, txFrame->DLC * 8, current_state);  //Data depending on DLC
-    if(((txFrame->CRC >> 31) & 1 ) == 1)
-    {
-      send_decon_uint32(txFrame->CRC,15, current_state);                //CRC
+    if (crc_zero_test == true){
+      current_state->crc_calc_check = false;
+      send_decon_uint32(0, 15, current_state);
     }
+    else if(((txFrame->CRC >> 31) & 1 ) == 1){
+      current_state->crc_calc_check = false;
+      send_decon_uint32(txFrame->CRC,15, current_state); //crc 
+    } 
     else
     {
-      for(int i = 0 ; i < 15 ; ++i)
-      {
+      for(int i = 0 ; i < 15 ; ++i){
         calc_curr_crc_bit(DOMINANT, current_state);
       }
+      //xil_printf("CRC before decon %x \n :", current_state->crc_tracker) ;
+      //current_state->crc_calc_check = false;
       send_decon_uint32(current_state->crc_tracker,15, current_state);
+      //xil_printf("CRC After decon: %x \n", current_state->crc_tracker) ;
     }
     send(RECESSIVE, current_state);                                     //CRC delimiter
     if(send(RECESSIVE, current_state) != DOMINANT)                      //Acknowledge
@@ -348,6 +376,7 @@ void wait_for_dominant()
     }
     send(RECESSIVE, current_state);                                     //Acknowledge delimiter
     send_decon_uint32(0xFFFF, 10, current_state);                       //EOF & interframe space filler
+    crc_zero_test = false;
     free(current_state);
     return success;
   }
@@ -394,44 +423,66 @@ void wait_for_dominant()
   }
 #elif defined(TEST_CASE_5) || defined(TEST_CASE_6)
   void can_mac_rx_frame(CAN_FRAME* rxFrame)
+{
+  bool tester = false;
+  bool crc_check = true;
+  while(!tester)
   {
-    bool tester = false;
-    while(!tester)
-    { 
-      CAN_SYMBOL sym_data;
-      uint32_t eof;
-      CAN_CHECK* current_state = (CAN_CHECK*)malloc(sizeof(CAN_CHECK));
-      can_state_initial(current_state);
-      wait_rx(11);
-      wait_for_dominant();                                                      //SOF
-      current_state->crc_calc_check = true;
-      receive_decon_uint32(&(rxFrame->ID), 11, current_state);                  //Identifier
-      receive(DOMINANT, current_state);                                         //RTR
-      receive(DOMINANT, current_state);                                         //IDE
-      receive(DOMINANT, current_state);                                         //r0
-      receive_decon_uint32(&(rxFrame->DLC), 4, current_state);                  //DLC
-      receive_decon_uint64(&(rxFrame->Data), rxFrame->DLC * 8, current_state);  //Data depending on DLC
-      receive_decon_uint32(&(rxFrame->CRC),15, current_state);                  //CRC
-      receive(&sym_data, current_state);                                        //CRC delimiter
-      if(current_state->crc_calc_check == false)
-      {
-        xil_printf("CRC FAIL, Message id 0x%x, DLC 0x%x, Data: 0x%08x%08x, CRC: 0x%x FAIL .\n",rxFrame->ID , rxFrame->DLC,(uint32_t)(rxFrame->Data >>32),(uint32_t)rxFrame->Data, rxFrame->CRC);
-        receive(&sym_data, current_state); // aCK
-        tester = false;
-        rxFrame->ID = 0;
-        rxFrame->DLC = 0;
-        rxFrame->Data = 0;
-        rxFrame->CRC = 0;
-      }
-      else
-      {
-        send(DOMINANT,current_state);
-        tester = true;
-      }
-      receive(&sym_data, current_state);
-      receive_decon_uint32(&eof, 7,current_state);
-    }
+  
+  
+  CAN_SYMBOL sym_data;
+  uint32_t eof;
+
+  wait_for_dominant();                          //SOF
+  CAN_CHECK* current_state = (CAN_CHECK*)malloc(sizeof(CAN_CHECK));
+  can_state_initial(current_state);
+  current_state->crc_calc_check = true;
+  
+  receive_decon_uint32(&(rxFrame->ID), 11, current_state);                 //Identifier
+  receive(DOMINANT, current_state);                           //RTR
+  receive(DOMINANT, current_state);                           //IDE
+  receive(DOMINANT, current_state);                           //r0
+  receive_decon_uint32(&(rxFrame->DLC), 4, current_state);                 //DLC
+  
+  receive_decon_uint64(&(rxFrame->Data), rxFrame->DLC * 8, current_state); //Data depending on DLC
+  current_state->crc_calc_check = false; 
+  receive_decon_uint32(&(rxFrame->CRC),15, current_state); //crc
+  
+  xil_printf("Comparing CRC From reciver 0x%x and second variable CRC from sender 0x%x\n" ,(current_state->crc_tracker&0x7FFF), (rxFrame->CRC&0x7FFF));  
+  receive(&sym_data, current_state);                                      //CRC delimiter
+
+  if ((current_state->crc_tracker&0x7FFF) != (rxFrame->CRC&0x7FFF)){
+   crc_check = false;
+   current_state->crc_calc_check = false;
   }
+  
+  if(crc_check == false){
+	 xil_printf("CRC FAIL, Message id 0x%x, DLC 0x%x, Data: 0x%08x%08x, CRC: 0x%x FAIL .\n",rxFrame->ID , rxFrame->DLC,(uint32_t)(rxFrame->Data >>32),(uint32_t)rxFrame->Data, rxFrame->CRC);
+	 crc_check = true;
+	receive(&sym_data, current_state); // aCK
+	crc_zero_test = false;
+	  
+	  
+	 //set variables back
+	 
+	 rxFrame->ID = 0;
+	 rxFrame->DLC = 0;
+	 rxFrame->Data = 0;
+	 rxFrame->CRC = 0;
+  }
+  else
+  {
+	  send(DOMINANT,current_state);
+    tester = true;
+	  
+  }
+  //current_state->crc_calc_check = true;
+	receive(&sym_data, current_state);
+	receive_decon_uint32(&eof, 7,current_state);
+	
+  
+ }
+}
 #endif
 void wait(uint64_t time)
 {
