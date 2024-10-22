@@ -23,6 +23,8 @@ int main (void)
   {
     uint64_t startTime = read_global_timer();
     uint64_t deadline = startTime + PERIOD1;
+    xil_printf("CAN client %d %d Frame sending id: 0x%x, DLC: 0x%x, Data: 0x%08x%08x, CRC: 0x%x\n",TILE_ID, PARTITION_ID, frame->ID, frame->DLC, (uint32_t)(frame->Data >> 32), (uint32_t)frame->Data, frame->CRC);
+ 
     while(!can_mac_tx_frame(frame))
     {
       if(read_global_timer() > deadline - (FRAME_LENGTH_CYCLES + SYMBOL_LENGTH_CYCLES * (25 + 8*frame->DLC + 44 + ((34 + 8*frame->DLC - 1) / 4))))
@@ -33,7 +35,6 @@ int main (void)
       xil_printf("Failed, resending\n");
     }
     wait(deadline);
-    xil_printf("CAN client %d %d Frame sending id: 0x%x, DLC: 0x%x, Data: 0x%08x%08x, CRC: 0x%x\n",TILE_ID, PARTITION_ID, frame->ID, frame->DLC, (uint32_t)(frame->Data >> 32), (uint32_t)frame->Data, frame->CRC);
   }
   free(frame);
 #else

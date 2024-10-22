@@ -308,6 +308,7 @@ void wait_for_dominant()
     can_state_initial(current_state);
     wait_rx(25);
     current_state->crc_calc_check = true;
+    current_state->arbitration_check = true;
     send(DOMINANT, current_state);                                      //SOF
     send_decon_uint32(txFrame->ID, 11, current_state);                  //Identifier
     if(current_state->arbitration_error)
@@ -396,7 +397,7 @@ void wait_for_dominant()
   {
     bool tester = false;
     while(!tester)
-    {
+    { 
       CAN_SYMBOL sym_data;
       uint32_t eof;
       CAN_CHECK* current_state = (CAN_CHECK*)malloc(sizeof(CAN_CHECK));
@@ -411,11 +412,10 @@ void wait_for_dominant()
       receive_decon_uint32(&(rxFrame->DLC), 4, current_state);                  //DLC
       receive_decon_uint64(&(rxFrame->Data), rxFrame->DLC * 8, current_state);  //Data depending on DLC
       receive_decon_uint32(&(rxFrame->CRC),15, current_state);                  //CRC
-      current_state->crc_calc_check = false;
       receive(&sym_data, current_state);                                        //CRC delimiter
       if(current_state->crc_calc_check == false)
       {
-        xil_printf("CRC FAIL, Message id 0x%x, DLC 0x%0, Data: 0x%08x%08x, CRC: 0x%x FAIL .\n",rxFrame->ID , rxFrame->DLC,(uint32_t)(rxFrame->Data >>32),(uint32_t)rxFrame->Data, rxFrame->CRC);
+        xil_printf("CRC FAIL, Message id 0x%x, DLC 0x%x, Data: 0x%08x%08x, CRC: 0x%x FAIL .\n",rxFrame->ID , rxFrame->DLC,(uint32_t)(rxFrame->Data >>32),(uint32_t)rxFrame->Data, rxFrame->CRC);
         receive(&sym_data, current_state); // aCK
         tester = false;
         rxFrame->ID = 0;

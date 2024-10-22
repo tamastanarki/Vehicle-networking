@@ -35,5 +35,5 @@
 #endif
 
 #ifdef TEST_CASE_5
-	#define CRC_BASE 0xBB3D
+	#define CRC_BASE 0x4599
 #endif
