@@ -306,6 +306,7 @@ void wait_for_dominant()
     CAN_CHECK* current_state = (CAN_CHECK*)malloc(sizeof(CAN_CHECK));
     bool success = true;
     can_state_initial(current_state);
+    wait_rx(25);
     current_state->crc_calc_check = true;
     send(DOMINANT, current_state);                                      //SOF
     send_decon_uint32(txFrame->ID, 11, current_state);                  //Identifier
@@ -398,8 +399,10 @@ void wait_for_dominant()
     {
       CAN_SYMBOL sym_data;
       uint32_t eof;
-      wait_for_dominant();                                                      //SOF
       CAN_CHECK* current_state = (CAN_CHECK*)malloc(sizeof(CAN_CHECK));
+      can_state_initial(current_state);
+      wait_rx(11);
+      wait_for_dominant();                                                      //SOF
       current_state->crc_calc_check = true;
       receive_decon_uint32(&(rxFrame->ID), 11, current_state);                  //Identifier
       receive(DOMINANT, current_state);                                         //RTR
@@ -408,7 +411,7 @@ void wait_for_dominant()
       receive_decon_uint32(&(rxFrame->DLC), 4, current_state);                  //DLC
       receive_decon_uint64(&(rxFrame->Data), rxFrame->DLC * 8, current_state);  //Data depending on DLC
       receive_decon_uint32(&(rxFrame->CRC),15, current_state);                  //CRC
-      //current_state->crc_calc_check = false;
+      current_state->crc_calc_check = false;
       receive(&sym_data, current_state);                                        //CRC delimiter
       if(current_state->crc_calc_check == false)
       {
@@ -437,8 +440,26 @@ void wait(uint64_t time)
 
   }
 }
-#if defined(TEST_CASE_6)
-  void case_6_sender(uint32_t ID, uint32_t DLC, uint32_t Data, uint32_t CRC)
+
+void wait_rx(int time)
+{
+  CAN_SYMBOL sym_data;
+
+  for(int i = 0; i < time;)
+  {
+    can_phy_rx_symbol(&sym_data);
+    if(sym_data == RECESSIVE)
+    {
+      i++;
+    }
+    else
+    {
+      i = 0;
+    }
+  }
+}
+/*#if defined(TEST_CASE_6)
+  void case_6_sender(uint32_t ID, uint32_t DLC, uint64_t Data, uint32_t CRC, int TILE_ID, int PARTITION_ID)
   {
     uint64_t t = read_global_timer();
     xil_printf("%04u/%010u: CAN client %d %d running in TEST_CASE_6\n", (uint32_t)(t >> 32), (uint32_t)t, TILE_ID, PARTITION_ID);
@@ -465,7 +486,7 @@ void wait(uint64_t time)
     }
     free(frame);
   }
-  void case_6_receiver(uint32_t Period)
+  void case_6_receiver(uint32_t Period, int TILE_ID, int PARTITION_ID)
   {
     uint64_t t = read_global_timer();
     xil_printf("%04u/%010u: CAN client %d %d running in TEST_CASE_6\n", (uint32_t)(t >> 32), (uint32_t)t, TILE_ID, PARTITION_ID);
@@ -486,4 +507,4 @@ void wait(uint64_t time)
       free(frame);
     }
   }
-#endif
+#endif*/

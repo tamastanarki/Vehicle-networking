@@ -37,3 +37,7 @@
 #ifdef TEST_CASE_5
 	#define CRC_BASE 0xBB3D
 #endif
+
+#ifdef TEST_CASE_6
+	#define CRC_BASE 0xBB3D
+#endif
